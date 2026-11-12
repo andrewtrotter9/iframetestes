@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>الإصغاء والاستجابة الداعمة</title>
+<style>
+:root{
+  --blue:#004d8c;
+  --grey:#4d4f53;
+  --white:#ffffff;
+  --tint:#eaf1f8;
+  --line:#c9d5e2;
+  --ok:#1b6e35;
+  --ok-bg:#e6f3ea;
+  --bad:#a52a1f;
+  --bad-bg:#fbeceb;
+  --head:"Segoe UI","Noto Sans Arabic","Noto Naskh Arabic",Tahoma,Arial,sans-serif;
+  --body:"Segoe UI","Noto Sans Arabic","Noto Naskh Arabic",Tahoma,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--white);color:var(--grey);font:16px/1.8 var(--body)}
+.shell{max-width:1000px;margin:0 auto;padding:28px 24px 48px}
+#app:focus{outline:none}
+h1,h2,h3{margin:0}
+h1,.h-display{font-family:var(--head);font-weight:800;text-transform:uppercase;letter-spacing:.01em;color:var(--blue);line-height:1.1}
+h1{font-size:clamp(1.6rem,4.2vw,2.3rem)}
+h2{font-family:var(--head);font-weight:800;color:var(--blue);font-size:clamp(1.3rem,3vw,1.65rem);line-height:1.2}
+h1:focus,h2:focus{outline:none}
+p{margin:0 0 .8em}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.on-blue :focus-visible,.btn:focus-visible{outline-color:var(--blue)}
+.sr{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- Hub ---------- */
+.hub-head{display:flex;gap:18px;align-items:center;margin-bottom:22px}
+.hub-icon{flex:0 0 68px;height:68px;border-radius:50%;background:var(--blue);display:grid;place-items:center}
+.hub-sub{font-weight:700;color:var(--grey);margin:.5em 0 .15em}
+.hub-hint{margin:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px}
+.card{position:relative;display:flex;text-align:start;padding:0;background:var(--white);border:1px solid var(--line);border-radius:10px;overflow:hidden;min-height:150px;transition:box-shadow .15s,border-color .15s}
+.card:hover{border-color:var(--blue);box-shadow:0 4px 14px rgba(0,77,140,.18)}
+.card-photo{flex:0 0 38%;max-width:132px;background:var(--tint);display:grid;place-items:center}
+.card-photo img{width:100%;height:100%;object-fit:cover;object-position:50% 20%;display:block}
+.av{display:grid;place-items:center;border-radius:50%;color:var(--white);font-family:var(--head);font-weight:800;letter-spacing:.02em}
+.av-0{background:var(--blue)}
+.av-1{background:var(--grey)}
+.card .av{width:76px;height:76px;font-size:1.7rem}
+.card-body{flex:1;padding:12px 14px;padding-inline-end:44px;display:flex;flex-direction:column;gap:3px}
+.card-name{font-family:var(--head);font-weight:800;font-size:1.25rem;color:var(--blue);text-transform:uppercase;line-height:1.1}
+.card-role{font-weight:700;font-size:.85rem;color:var(--grey)}
+.card-where{display:flex;align-items:center;gap:5px;font-size:.85rem;border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:4px}
+.card-quote{font-size:.88rem;line-height:1.4;color:var(--grey)}
+.card-quote b{color:var(--blue);font-size:1.3em;line-height:0;vertical-align:-.15em;margin-inline-end:3px}
+.card-go{position:absolute;inset-inline-end:10px;bottom:10px;width:26px;height:26px;border-radius:50%;border:2px solid var(--blue);display:grid;place-items:center}
+.card.done{border-color:var(--blue)}
+.badge-req{position:absolute;top:8px;inset-inline-end:8px;border:1px solid var(--grey);color:var(--grey);background:var(--white);font-size:.72rem;font-weight:700;padding:1px 8px;border-radius:99px}
+.badge-done{position:absolute;top:8px;inset-inline-end:8px;background:var(--blue);color:var(--white);font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:99px;display:flex;gap:4px;align-items:center}
+.info{display:flex;gap:12px;align-items:center;background:var(--tint);border-radius:8px;padding:12px 16px;margin-top:18px;font-size:.92rem}
+.info-i{flex:0 0 30px;height:30px;border-radius:50%;background:var(--blue);color:var(--white);display:grid;place-items:center;font-weight:700;font-family:Georgia,serif}
+.hub-foot{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;justify-content:space-between;margin-top:22px}
+.tally{font-weight:700;color:var(--blue)}
+.tally small{display:block;font-weight:400;color:var(--grey)}
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--blue);color:var(--white);border:2px solid var(--blue);border-radius:99px;padding:10px 26px;font-weight:700;letter-spacing:.02em}
+.btn:hover{background:var(--grey);border-color:var(--grey)}
+.btn[disabled]{background:#c8ccd2;border-color:#c8ccd2;color:#5c5f64;cursor:not-allowed}
+.btn.alt{background:var(--white);color:var(--blue)}
+.btn.alt:hover{background:var(--tint)}
+.link{background:none;border:0;padding:4px 0;color:var(--blue);font-weight:700;text-decoration:underline;text-underline-offset:3px}
+
+/* ---------- Scene screens ---------- */
+.topbar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between;margin-bottom:18px}
+.who{display:flex;gap:12px;align-items:center}
+.who .av,.who img{width:46px;height:46px;font-size:1.05rem;border-radius:50%;object-fit:cover;object-position:50% 25%}
+.who-name{font-family:var(--head);font-weight:800;font-size:1.15rem;color:var(--blue);text-transform:uppercase;line-height:1.1}
+.who-meta{font-size:.85rem}
+.steps{display:flex;align-items:center;gap:8px;font-size:.85rem;font-weight:700;color:var(--blue);margin-bottom:14px}
+.dots{display:flex;gap:5px}
+.dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--blue)}
+.dot.on{background:var(--blue)}
+.remember{border-inline-start:4px solid var(--grey);background:var(--tint);padding:10px 14px;margin-bottom:16px;font-size:.92rem;border-radius:0;border-start-end-radius:6px;border-end-end-radius:6px}
+.scene{background:var(--blue);color:var(--white);border-radius:10px;padding:22px 26px;margin-bottom:22px}
+.scene .narr{font-style:italic;margin-bottom:.6em;opacity:.95}
+.scene .quote{margin:0;font-size:clamp(1.15rem,2.6vw,1.45rem);line-height:1.4;font-weight:700}
+.recap{background:var(--tint);border-radius:10px;padding:18px 22px;margin-bottom:22px}
+.recap h2{margin-bottom:.4em}
+.prompt{margin:0 0 12px}
+.opts{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.opt{display:flex;gap:14px;align-items:flex-start;width:100%;text-align:start;background:var(--white);border:2px solid var(--line);border-radius:10px;padding:12px 16px;color:var(--grey)}
+.opt:hover:not([disabled]){border-color:var(--blue);background:var(--tint)}
+.letter{flex:0 0 30px;height:30px;border-radius:50%;background:var(--blue);color:var(--white);display:grid;place-items:center;font-weight:700;font-size:.9rem}
+.opt-txt{flex:1;padding-top:3px}
+.opt-tag{display:block;font-size:.8rem;font-weight:700;margin-top:3px}
+.opt.good{border-color:var(--ok);background:var(--ok-bg)}
+.opt.good .letter{background:var(--ok)}
+.opt.good .opt-tag{color:var(--ok)}
+.opt.bad{border-color:var(--bad);background:var(--bad-bg)}
+.opt.bad .letter{background:var(--bad)}
+.opt.bad .opt-tag{color:var(--bad)}
+.opt[disabled]{cursor:default}
+.opt.faded{opacity:.62}
+.fb{margin-top:16px;border-radius:10px;padding:16px 20px;border:2px solid var(--blue);background:var(--white)}
+.fb:focus{outline:none}
+.fb h3{font-family:var(--head);font-size:1.15rem;font-weight:800;color:var(--blue);margin-bottom:.35em}
+.fb.good h3{color:var(--ok)}
+.fb.bad h3{color:var(--bad)}
+.fb p:last-of-type{margin-bottom:0}
+.fb .actions{margin-top:14px}
+.kl{background:var(--white);border:2px solid var(--blue);border-radius:10px;padding:20px 24px}
+.kl h2{margin-bottom:.4em}
+.actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.page-actions{margin-top:22px}
+
+/* ---------- Quiz ---------- */
+fieldset{border:0;margin:0;padding:0;min-inline-size:0}
+legend{padding:0;margin-bottom:12px;font-weight:700;color:var(--blue)}
+.chk{display:flex;gap:12px;align-items:flex-start;border:2px solid var(--line);border-radius:10px;padding:11px 14px;cursor:pointer;background:var(--white)}
+.chk:hover{border-color:var(--blue)}
+.chk input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--blue);flex:0 0 auto}
+.chk.good{border-color:var(--ok);background:var(--ok-bg)}
+.chk.bad{border-color:var(--bad);background:var(--bad-bg)}
+.chk.miss{border-color:var(--grey);border-style:dashed}
+.chk .tag{display:block;font-size:.8rem;font-weight:700}
+.chk.good .tag{color:var(--ok)}
+.chk.bad .tag{color:var(--bad)}
+.panel{background:var(--blue);color:var(--white);border-radius:10px;padding:22px 26px}
+.panel h2{color:var(--white);margin-bottom:.5em}
+.panel p:last-child{margin-bottom:0}
+.panel .btn{background:var(--white);color:var(--blue);border-color:var(--white)}
+.panel .btn:hover{background:var(--tint)}
+.panel :focus-visible{outline-color:var(--white)}
+
+@media (max-width:560px){
+  .shell{padding:18px 14px 36px}
+  .hub-icon{flex-basis:52px;height:52px}
+  .scene{padding:18px}
+  .card-photo{flex-basis:30%}
+  .card .av{width:58px;height:58px;font-size:1.3rem}
+}
+/* Arabic: no letter-spacing (breaks joining), mirror directional icons, heavier line spacing for headings */
+[dir=rtl] *{letter-spacing:0!important}
+[dir=rtl] .card-go svg{transform:scaleX(-1)}
+h1,h2{line-height:1.45}
+.scene .quote{line-height:1.7}
+.scene .quote::before{content:"«"}
+.scene .quote::after{content:"»"}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <main id="app" tabindex="-1"></main>
+  <div id="live" class="sr" aria-live="polite"></div>
+  <p id="ver" style="margin-top:28px;font-size:.72rem;color:#4d4f53;opacity:.7"></p>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* =====================================================================
+   CONFIG – change these without touching the rest of the code
+   ===================================================================== */
+var CONFIG = {
+  MIN_BRANCHES: 3,          // conversations that must be completed before the learner can continue
+  REQUIRED_IDS: ['sofia','kwame'],   // conversations that MUST be completed (they contain the 'connecting to support' follow-ups)
+  MAX_ATTEMPTS: 2,          // attempts allowed on the continuation questions and the quiz before the correct answer is shown
+  REPORT_SCORE: false,      // true = send first-attempt accuracy to the LMS as the score
+  VERSION: 'v5-AR · محاولتان · المتابعات مدمجة',   // shown in small print at the bottom of the page
+  SHOW_VERSION: true,       // set to false to hide the version label before launch
+  SHOW_LEARNER_MESSAGE_WHEN_NO_LMS: false
+};
+
+/* =====================================================================
+   CONTENT – all learner-facing text lives below this line.
+   Text is written as in the script; {scriptName} is swapped for the
+   display name (see CHARS) so a name change is a one-line edit.
+   ===================================================================== */
+var CHARS = [
+  {id:'nuno',  scriptName:'نونو',   name:'نونو',  age:19, role:'لاعب',                      country:'البرازيل', tone:0, photo:'',
+   quote:'لا أعرف حقًا ما المشكلة. فقط لا أشعر بأنني على طبيعتي في الآونة الأخيرة.'},
+  {id:'sofia', scriptName:'صوفيا',  name:'صوفيا', age:27, role:'مدرّبة',                    country:'إنجلترا',  tone:1, photo:'',
+   quote:'أشعر بإرهاق دائم، ويصعب عليّ أن أُريح عقلي وأتوقف عن التفكير.'},
+  {id:'c3',    scriptName:'شانيس',  name:'مريم',  age:15, role:'لاعبة في الأكاديمية',       country:'المغرب',   tone:0, photo:'',
+   quote:'كل شيء يبدو ثقيلًا عليّ في الوقت الحالي.'},
+  {id:'kwame', scriptName:'كوامي',  name:'كوامي', age:32, role:'حكم',                       country:'غانا',     tone:1, photo:'',
+   quote:'الأمور تغيّرت مؤخرًا، وأجد ذلك صعبًا جدًا.'},
+  {id:'yuki',  scriptName:'يوكي',   name:'يوكي',  age:41, role:'مدير الفريق',               country:'اليابان',  tone:0, photo:'',
+   quote:'أنا قلق على شخص قريب مني.'},
+  {id:'ratu',  scriptName:'راتو',   name:'راتو',  age:30, role:'مسؤول الرعاية في النادي',   country:'فيجي',     tone:1, photo:'',
+   quote:'لست متأكدًا مما أحتاج إليه الآن.'}
+];
+
+var TEXT = {
+  title: 'الإصغاء والاستجابة الداعمة',
+  hubSub: 'لقد سألتَ شخصًا ما عن حاله، وهو يرغب في التحدّث إليك.',
+  hubHint: 'انقر على أحد الأشخاص لتعرف ما قد يشاركه معك.',
+  hubInfo: 'كل محادثة فريدة. قد يشارك الناس أشياء كثيرة مختلفة، وسيختلف الدعم من شخص إلى آخر.',
+  remember: 'تذكَّر: لا نعرف بعدُ إلى أين ستقودنا أيٌّ من هذه المحادثات. ليس دورنا أن نعرف ما المشكلة أو أن نقرر نوع الدعم الذي يحتاجه الشخص.'
+};
+
+/* opts: [text, isCorrect, "what happens" text (retry mode only)] */
+var BRANCHES = {
+
+nuno: [
+ {type:'q', narr:'بعد التدريب، يتأخر نونو ليتحدث إليك. يقول:',
+  quote:'لا أعرف حقًا ما المشكلة. فقط لا أشعر بأنني على طبيعتي في الآونة الأخيرة.',
+  prompt:'ماذا تقول؟',
+  opts:[
+   ['«هل تظن أنك قد تكون مكتئبًا؟»',0],
+   ['«لا بأس، لا يلزم أن تكون الصورة واضحة لديك تمامًا. كيف كانت الأمور؟»',1],
+   ['«هل لهذا علاقة بترقيتك إلى الفريق الأول؟»',0],
+   ['«هذا يحدث للجميع أحيانًا. سيزول.»',0]],
+  fb:'أخبرك نونو أنه لا يعرف ما المشكلة. إن مطالبته بتسمية ما يحدث، أو تخمين السبب، أو قبول أن هذا أمر طبيعي، كلها أمور تُغلق باب الحديث. في المقابل، دعوته إلى وصف ما يمر به تُبقي الحديث مفتوحًا. أما الإجابة أ فتمنح فتًى في التاسعة عشرة تشخيصًا من شخص غير مؤهَّل لإعطائه.'},
+ {type:'q',
+  quote:'لا أعرف. أشعر فقط بأنني فاتر الهمة. التدريب يسير على ما يرام. لكنني لا أرغب في فعل أي شيء بعد التدريب.',
+  prompt:'وماذا بعد؟',
+  opts:[
+   ['أن تسأله عمّا تغيّر ومتى لاحظ هذا التغيّر لأول مرة.',1],
+   ['أن تقترح عليه زيارة طبيب النادي.',0],
+   ['أن تطمئنه بأن الأمر يبدو إرهاقًا عاديًا.',0],
+   ['أن تسأله هل ينام ويأكل جيدًا.',0]],
+  fb:'كون نونو وصف نفسه بأنه «فاتر الهمة» وأنه ينسحب من أنشطة كان يمارسها يستحق أن تفهمه بصورة أفضل قبل أن تمضي أبعد. قد تأتي الإجابة ب في وقتها، لكنها غير مناسبة بعد ثلاثين ثانية من بدء الحديث. أما الإجابة ج فتحسم المسألة قبل أن تُطرح: فقد وصف نونو تغيّرًا، ووصفه بأنه إرهاق عادي يدعوه إلى ترك الأمر عند هذا الحد. وتجعل الإجابة د منك مُقيِّمًا.'},
+ {type:'kl',
+  quote:'قبل أسابيع قليلة. الأمر مستمر منذ فبراير تقريبًا.',
+  kl:['لم تعرف ما المشكلة، ولم تكن بحاجة إلى ذلك. لقد تبيّن لك أن شيئًا ما قد تغيّر، وتقريبًا متى، وأن الأمر مستمر. وهذا يكفي لإبقاء الحديث مفتوحًا ولتمكينك من الاطمئنان عليه لاحقًا. فإن كانت المشكلة ما زالت قائمة عند متابعتك له، فشجّع نونو على مراجعة الطبيب أو وجّهه إلى المسار الطبي المعتمد لديكم. وإن رغب في دعم إضافي، فيمكنك مساعدته على التفكير فيما قد يفيده، وتتفق معه على ما يُنقل وإلى من.']}
+],
+
+sofia: [
+ {type:'q',
+  quote:'أشعر بإرهاق دائم، ويصعب عليّ أن أُريح عقلي وأتوقف عن التفكير.',
+  prompt:'ماذا تقول؟',
+  opts:[
+   ['«ينبغي أن تأخذي بضعة أيام إجازة.»',0],
+   ['«يبدو هذا مُرهقًا. منذ متى وأنتِ على هذه الحال؟»',1],
+   ['«إنها وظيفة شاقة. هذا جزء من طبيعة العمل.»',0],
+   ['«هل جرّبتِ النوم مبكرًا؟»',0]],
+  fb:'تتعامل الإجابة ج مع المشكلة كأنها مجرد جزء من العمل فتُغلق الحديث. أما الإجابتان أ و د فتقدمان حلولًا قبل أن تعرف المشكلة، وبالنسبة إلى مدرّبة بعقد قصير الأمد، قد يوحي اقتراح أخذ إجازة بأنك تظن أنها غير قادرة على التحمل.'},
+ {type:'q',
+  quote:'منذ فترة. لا أريد أن يتجاوز هذا الحديث حدود هذه المحادثة، بصراحة. عقدي ينتهي في يونيو.',
+  prompt:'ماذا تقول؟',
+  opts:[
+   ['«لا تقلقي، لن يعرف أحد بهذا.»',0],
+   ['«أفهم ذلك. يبقى هذا بيني وبينكِ، ما لم يكن في كلامكِ ما يثير قلقًا على سلامتكِ، وفي هذه الحالة سأضطر إلى طلب المساعدة، وسأخبركِ أنني سأفعل ذلك قبل أن أفعله.»',1],
+   ['«لا ينبغي أن تقلقي بشأن ذلك.»',0],
+   ['«سأضطر إلى إبلاغ المدير الرياضي.»',0]],
+  fb:'مخاوف صوفيا بشأن مستقبلها واقعية، وهي السبب الذي يجعل كثيرين في كرة القدم يلتزمون الصمت. تتجاهل الإجابة ج المشكلة. وتتضمن الإجابة أ وعدًا قد لا تستطيع الوفاء به. وتحوّل الإجابة د حديثًا عن الرعاية والعافية إلى إجراء رسمي. إن توضيح حدود السرّية منذ البداية هو ما يتيح للحديث أن يمضي.'},
+ {type:'kl',
+  quote:'حسنًا، شكرًا.',
+  kl:['يوازن الناس بين ما قد يكلّفهم الإفصاح. وبالنسبة إلى العاملين بعقود غير مستقرة، فهذه الحسبة حقيقية. لا يمكنك إزالة المخاطرة، لكن الصدق بشأن السرّية في وقت مبكر يتيح للشخص أن يواصل الحديث. قل ما يمكنك وما لا يمكنك إبقاءه سرًّا، وبكلماتك أنت. إن وجود قلق على السلامة هو أكثر الأسباب شيوعًا التي قد تضطرك إلى نقل أمر ما، لكنه ليس السبب الوحيد: فقد تُلزمك أيضًا واجبات الحماية، والمسؤوليات القانونية ومسؤوليات الإبلاغ المترتبة على مؤسستك بمشاركة المعلومات. اعرف ما ينطبق عليك قبل أن تحتاج إلى معرفته. ويُدرج بيان الإجماع الصادر عن اللجنة الأولمبية الدولية لعام 2026 الخوف من الاستبعاد والقلق من فقدان الفرص الرياضية ضمن أبرز العوائق التي تحول دون طلب المساعدة. وحسبة صوفيا ليست غريبة ولا غير منطقية.']}
+],
+
+c3: [
+ {type:'q', narr:'بعد حصة تدريبية، تقول لك شانيس بصوت خافت:',
+  quote:'كل شيء يبدو ثقيلًا عليّ في الوقت الحالي.',
+  prompt:'ما أول ما ينبغي فعله؟',
+  opts:[
+   ['أن تسأل شانيس عمّا كان يحدث.',0],
+   ['أن تنتقل إلى مكان هادئ وخاص لتتحدث شانيس بحرّية.',0],
+   ['أن تُعلم شانيس، قبل أن تمضي أبعد، بأنه قد لا يكون بإمكانك الاحتفاظ بما تقوله لنفسك، بحسب ما ستخبرك به.',1],
+   ['أن تطمئن شانيس بأن كل ما ستقوله في أمان معك.',0]],
+  fb:'عمر شانيس 15 عامًا. فإذا أخبرتك بشيء يثير مخاوف تتعلق بالحماية، فسيتعيّن عليك إبلاغ الجهات المعنية، وهي تستحق أن تعرف ذلك قبل، لا بعد، أن تقرر ما ستقوله. الإجابة أ هي السؤال الصحيح في التوقيت الخاطئ: فهي تدعوها إلى إخبارك بشيء قبل أن تعرف ما قد يتعيّن عليك فعله به. أما الإجابة ب، فالمكان الخاص لا يعني المكان المعزول، ولا ينبغي أن تكون وحدك مع طفل خلف باب مغلق. وفي بعض البيئات، يُعدّ انفراد بالغ من الجنس الآخر بفتاة في الخامسة عشرة مشكلة في حد ذاته، مهما حسنت النية. والحل في هذه الحالة أن يكون بالغ آخر حاضرًا أو أن يتولى بالغ آخر الحديث، لا أن يُلغى الحديث. وتبقى الإجابة د أشد الخيارات ضررًا، لأنها تَعِدها بما قد لا تستطيع الوفاء به.'},
+ {type:'q',
+  narr:'تقول أنت: «قبل أن تخبريني بأي شيء آخر، عليّ أن أقول لكِ إنه بما أنكِ دون الثامنة عشرة، فإذا أقلقني شيء يتعلق بسلامتكِ فلن أستطيع إبقاءه بيني وبينكِ. وسأخبركِ دائمًا بما سأفعله.»',
+  quote:'حسنًا. هي الدراسة وكرة القدم وكل ما في البيت. إنه كثير.',
+  prompt:'وماذا بعد؟',
+  opts:[
+   ['أن تسألها تحديدًا عمّا يحدث في البيت.',0],
+   ['أن تسأل شانيس أيّ جزء يثقل عليها أكثر.',1],
+   ['أن تخبر شانيس بأنك ستتحدث إلى والديها.',0],
+   ['أن تطمئن شانيس بأن كثيرين في الأكاديمية يشعرون بالأمر نفسه.',0]],
+  fb:'ذكرت شانيس ثلاثة أمور تُثقل عليها. إن ترك الخيار لها لتحدد أيها يثقل عليها أكثر يُبقيها ممسكة بزمام وضعها. أما الإجابة أ فتضغط عليها في الجانب الذي يثير فضولك أنت، وقد لا يكون هو الذي تحتاج إلى الحديث عنه. وتسلبها الإجابة ج قدرتها على التصرف، ولا تعرف بعدُ إن كانت المشكلة في البيت. وتقول الإجابة د لشانيس إن ما وصفته أمر عادي، فتمنحها سببًا للتوقف عن الوصف.'},
+ {type:'kl',
+  quote:'ربما الدراسة. عندي امتحانات، وأتدرب أربع ليالٍ في الأسبوع.',
+  kl:['عندما تتحدث مع طفل أو شابّ، وضّح حدود السرّية قبل أن يتحدث إليك، لا بعده. قد يكون توضيح هذه الحدود منذ البداية محرجًا، لكنه يحمي العلاقة. ولو مضت شانيس تتحدث عن أمر يستوجب الإبلاغ، فمن المهم أن تكون قد عرفت ما سيحدث بعد ذلك.']}
+],
+
+kwame: [
+ {type:'q',
+  quote:'الأمور تغيّرت مؤخرًا، وأجد ذلك صعبًا جدًا.',
+  prompt:'ماذا تقول؟',
+  opts:[
+   ['«ما الذي تغيّر؟»',1],
+   ['«هل هو التعرّض للإساءة؟ لقد ازداد سوءًا هذا الموسم.»',0],
+   ['«التحكيم صعب. عليك أن تتحمّل الانتقادات.»',0],
+   ['«هل تحدثت مع مسؤولك الإقليمي؟»',0]],
+  fb:'فتح لك كوامي بابًا؛ فاعبر منه بدل أن تخمّن ما وراءه. تخمّن الإجابة ب أن الأمر يتعلق بالإساءة، والتخمين المعقول أصعب في التصحيح من التخمين غير المعقول. وتمثل الإجابة ج الرسالة التي تُثني الحكام عن الحديث. وتنتقل الإجابة د إلى الإحالة قبل أن تعرف ما الذي تغيّر.'},
+ {type:'q',
+  quote:'انتقلت إلى منطقة أخرى بسبب العمل. لم أعد أعرف أحدًا في مبارياتي. أقود السيارة إلى هناك، وأحكّم المباراة، وأعود إلى البيت.',
+  prompt:'ما الاستجابة الأكثر فائدة؟',
+  opts:[
+   ['أن تقول لكوامي إنه سيعتاد الوضع مع الوقت.',0],
+   ['أن تسأل كوامي هل ما زال على اتصال بأشخاص في المنطقة التي كان يحكّم فيها سابقًا، وهل يمكن لشيء أن يساعده على الشعور بوحدة أقل في المباريات.',1],
+   ['أن تقترح عليه الاشتراك في نادٍ رياضي محلي.',0],
+   ['أن تعرض أن تكون جهة الاتصال الرئيسية له في المنطقة.',0]],
+  fb:'مشكلة كوامي هي العزلة، وهي مشكلة قد تواجه الحكّام: فهو يعمل إلى جانب زملاء قد لا يعرفهم، ويسافر إلى المباراة ثم يعود، وليس حوله فريق أو طاقم بين المباريات. إن سؤاله عمّا قد يساعده يتيح له أن يبقى ممسكًا بزمام الموقف. وتطلب منه الإجابة أ الانتظار، فتتركه في الوضع نفسه. وتُرسله الإجابة ج إلى نادٍ رياضي حيث سيكون وحيدًا أيضًا. أما الإجابة د فعلى كرمها تجعلك منظومة الدعم كلها، وهذا غير مستدام وليس الهدف.'},
+ {type:'kl',
+  quote:'ما زلت أتحدث إلى اثنين من الشباب في منطقتي القديمة. لم يخطر ببالي أن أتصل بهما.',
+  kl:['غالبًا ما يفتقر الحكام إلى الهياكل الدائمة التي تحيط باللاعبين والمدربين. وأحيانًا يكون أنفع ما يمكنك فعله هو أن تذكّر شخصًا بصلة يملكها بالفعل.']}
+],
+
+yuki: [
+ {type:'q',
+  quote:'أنا قلق على شخص قريب مني.',
+  prompt:'ماذا تقول؟',
+  opts:[
+   ['«من هو؟»',0],
+   ['«هل هو شخص في النادي؟»',0],
+   ['«يبدو هذا صعبًا. هل تودّ أن تحدثني عنه؟»',1],
+   ['«هل لديه من يدعمه؟»',0]],
+  fb:'تطلب الإجابتان أ و ب من يوكي أن يكشف هوية الشخص الذي يقلقه أو معلومات عنه قبل أن تعرف إن كان ذلك مهمًا. دعه يقرر قدر ما يشاركه. وتسأل الإجابة د عمّا إذا كان الشخص الآخر يتلقى دعمًا قبل أن يقول يوكي شيئًا عن الدعم الذي يتلقاه هو.'},
+ {type:'q',
+  quote:'إنه أخي. هو مريض منذ وقت طويل. وأنا من يتولى هذه الأمور.',
+  prompt:'ما أهم شيء ينبغي فعله بعد ذلك؟',
+  opts:[
+   ['أن تنصح يوكي بكيفية دعم أخيه.',0],
+   ['أن تسأل يوكي كيف حاله هو.',1],
+   ['أن تقترح أن يتواصل أخوه مع مختص.',0],
+   ['أن تعرض البحث عن خدمات يمكن ليوكي أن يمررها إلى أخيه.',0]],
+  fb:'يوكي هو الشخص الذي أمامك. قد يكون حمل القلق على شخص آخر لفترة طويلة مُنهِكًا، وكثيرًا ما لا يُسأل من هم في هذا الموقف عن حالهم هم. أما الإجابات أ و ج و د فتُبقي التركيز على أخي يوكي، وهو ليس مسؤوليتك وليس الشخص الذي أمامك.'},
+ {type:'kl',
+  quote:'أنا؟ لم أفكر في الأمر. متعب، على ما أظن.',
+  kl:['عندما يُخبرك شخص بقلقه على شخص آخر، فهو يخبرك أيضًا بشيء عن نفسه. ادعم الشخص الذي أمامك.']}
+],
+
+ratu: [
+ {type:'q',
+  quote:'لست متأكدًا مما أحتاج إليه الآن.',
+  prompt:'ماذا تقول؟',
+  opts:[
+   ['«لا بأس. هل تودّ أن نتحدث في الأمر معًا؟»',1],
+   ['«أنت مسؤول الرعاية، وأنت أدرى مني!»',0],
+   ['«حسنًا، ما الذي أوصلك إلى هذا؟»',0],
+   ['«هل أبحث لك عن شخص تتحدث إليه؟»',0]],
+  fb:'قيلت الإجابة ب بحسن نية، لكنها تُغلق باب الحديث تمامًا، لأنها تخبر راتو بأن عليه أن يتدبّر الأمر بنفسه. وكثيرًا ما يُقابَل العاملون في مهن المساعدة بهذا الرد تحديدًا، مما قد يزيد من صعوبة حديثهم عن معاناتهم. وتطلب الإجابة ج من راتو أن يبرّر نفسه وقد قال للتوّ إنه لا يعرف ما يحتاج إليه. وتحيله الإجابة د إلى غيرك في وقت اختار فيه أن يتحدث إليك.'},
+ {type:'q',
+  quote:'مررت بثلاث حالات صعبة هذا الموسم. وما زلت أفكر في إحداها. لا أريد أن أجعل الأمر يدور حولي.',
+  prompt:'ماذا تقول؟',
+  opts:[
+   ['«عليك أن تبتعد عن العمل أكثر.»',0],
+   ['«أنت لا تجعل الأمر يدور حولك. دعم الآخرين يؤثر فيمن يقدّمونه. هذا أمر طبيعي ويستحق أن يُؤخذ على محمل الجد.»',1],
+   ['«هل عقدتَ جلسة مراجعة بعد هذه الحالات؟»',0],
+   ['«لا يمكنك أن تحمل هذه الأمور معك إلى البيت.»',0]],
+  fb:'عبّر راتو عن رغبته في ألا يجعل الأمر يدور حوله قبل أن يصف المشكلة. وإخباره بأن من الطبيعي أن يتأثر من يدعمون الآخرين هو القول الصحيح. أما الإجابتان أ و د فتعليمات يعرفها بالفعل ولا يستطيع اتباعها. وتطرح الإجابة ج سؤالًا وجيهًا، لكن ينبغي طرحه بعد أن تخبر راتو بأن ردّ فعله مشروع، لا بدلًا من ذلك.'},
+ {type:'kl',
+  quote:'أظن أنني لم أتحدث إلى أحد عن الأمر.',
+  kl:['يتحمل مسؤولو الرعاية ومسؤولو الحماية والطواقم الطبية ضيق الآخرين مرارًا وتكرارًا، وهم من بين أقل الناس احتمالًا لأن يُسألوا عن حالهم. ودعم من يقدّم الدعم جزء من الاستجابة الأولى للصحة النفسية أيضًا. ويؤكد بيان الإجماع الصادر عن اللجنة الأولمبية الدولية لعام 2026 الفكرة نفسها: فأعراض الصحة النفسية لا يعانيها الرياضيون وحدهم، بل المدربون والطواقم الطبية وطواقم الأداء وغيرهم ممن يعملون في أدوار غير سريرية.']}
+]
+};
+
+var QUIZ = {
+  title: 'ما الذي بقي كما هو؟',
+  intro: 'على الرغم من أن التمرين تضمّن ستة أشخاص وست محادثات، فإن بعض الأمور كانت مشتركة بينها جميعًا.',
+  q: 'أيٌّ من الإرشادات التالية قد ينطبق عند تقديم استجابة أولى للصحة النفسية مناسبة وداعمة؟',
+  hint: 'اختر جميع الإجابات المنطبقة.',
+  items: [
+   ['الاستماع دون إصدار أحكام.',1],
+   ['الوعد بإبقاء كل شيء سريًّا مهما كانت الظروف.',0],
+   ['افتراض أن الشخص الذي قد يستفيد من الدعم يحتاج إلى تدخل عاجل.',0],
+   ['التزام الهدوء والحضور الذهني.',1],
+   ['الإقرار بما شاركه الشخص.',1],
+   ['محاولة حل المشكلة فورًا.',0],
+   ['منح الشخص الوقت والمساحة للحديث إن رغب في ذلك.',1],
+   ['إخبار الشخص بما تظنه المشكلة بالضبط.',0],
+   ['تشجيع الشخص على طلب الدعم عند الاقتضاء.',1],
+   ['إدراك أن الدعم الإضافي قد يكون مفيدًا أحيانًا.',1],
+   ['الضغط على الشخص ليتحدث إن لم يرغب في ذلك.',0]
+  ],
+  passMsg: 'صحيح. لقد اخترت جميع الإجابات المنطبقة.',
+  failMsg: 'ليس تمامًا. راجع الإجابات المحددة ثم حاول مرة أخرى. تبقّت لك محاولة واحدة.',
+  revealMsg: 'ليس تمامًا. كانت هذه محاولتك الثانية، لذا أُبرزت الإجابات الصحيحة الآن. ألقِ نظرة عليها ثم تابع.'
+};
+
+var FEEDBACK = {
+  title: 'الملاحظات',
+  paras: [
+   'لاحظ كم تغيّر الأمر بحسب الشخص الذي تحدثت إليه، وكم كان تغيّر طريقة استجابتك ضئيلًا.',
+   'لا توجد استجابة أولى للصحة النفسية تناسب الجميع. نادرًا ما يتعلق تقديم الدعم بقول الكلام المثالي أو بحلّ مشكلات الآخرين. وفي الغالب يتعلق بالإصغاء، والبقاء حاضرًا، ومساعدة الشخص على اتخاذ الخطوة المناسبة التالية.',
+   'قد يختلف ما يحتاج إليه شخص عمّا يحتاج إليه آخر، وقد يتغير مع الوقت. لا يلزمك أن تملك كل الإجابات لتُحدث فرقًا إيجابيًا.'
+  ]
+};
+
+var CONT = {
+ c1: {
+  screens:[
+   {narr:'بعد يومين، تقول لك صوفيا:', quote:'كنت أفكر فيما قلته. سأذهب إلى الطبيب، لكنني لا أريد أن يتحول الأمر إلى قضية كبيرة.',
+    prompt:'ماذا تفعل؟',
+    opts:[
+     ['أن تقول لصوفيا إنك ستحجز لها موعدًا مع الطبيب وتُخبره بما كان يحدث.',0,
+      'تسألك صوفيا ماذا تقصد بعبارة «ما كان يحدث». لقد وافقت على زيارة الطبيب، لكنها لم توافق على أن تُخبره أنت بشيء عنها.'],
+     ['أن تسأل صوفيا عمّا تودّ أن يعرفه الطبيب، وتعرض أن تكون معها حين تتصل لحجز الموعد.',1],
+     ['أن تطلب من صوفيا أن تحجز الموعد بنفسها، حفاظًا على الخصوصية.',0,
+      'تقول صوفيا إنها ستحجز الموعد، لكنها لا تفعل. إن ترك شخص قد يستفيد من الدعم ليرتّب موعدًا وحده هو في الغالب النقطة التي تتوقف عندها عملية الربط الهادئة. الخصوصية مهمة، لكنها لا تعني ترك الشخص يواجه الأمر وحده. إن حجز موعد نيابةً عن شخص يعني إخبار شخص ما بشيء، فاسأل أولًا. اعرض المساعدة واترك للشخص حق الرفض.'],
+     ['أن تخبر الطبيب بأن صوفيا تمر بصعوبة، وتترك له الأمر من هناك.',0,
+      'يستدعي الطبيب صوفيا إلى غرفته. وتعلم صوفيا الآن أن شيئًا قيل عنها دون أن تسمعه، وقد يكون ذلك مخالفًا لإجراءات السرّية أو تبادل المعلومات في مؤسستك، لذا ينبغي أن تتحقق من ذلك أولًا. إن عدم التوجه إلى الشخص مباشرة نادرًا ما يوصلك إلى مبتغاك أسرع، وكثيرًا ما يكلّفك الحديث معه.']
+    ]},
+   {narr:'تقول صوفيا:', quote:'قل فقط إنني لا أنام جيدًا وإنني مُجهَدة. لا تخبره بالجزء الآخر.',
+    prompt:'ماذا تقول للطبيب؟',
+    opts:[
+     ['«طلبت مني صوفيا أن أخبرك بأنها لا تنام جيدًا وأنها مُجهَدة.»',1],
+     ['«تقول صوفيا إن المشكلة في النوم، لكنني أظن أن هناك ما هو أكثر.»',0,
+      'اتفقتَ مع صوفيا على أن تقول شيئًا واحدًا، لكنك قلت شيئًا آخر. وإن علمت بذلك — وقد تعلم — فقد أزلتَ السبب الذي جعلها توافق على الحديث أصلًا. وإن كنت ترى أن الطبيب يحتاج إلى معرفة أكثر مما ترغب صوفيا في مشاركته، فهذا حديث ينبغي أن يجري مع صوفيا، لا من وراء ظهرها.'],
+     ['«أنا قلق على صوفيا. وضعها التعاقدي يضعها تحت ضغط كبير.»',0,
+      'لقد نقلتَ الأمر الوحيد الذي طلبت منك صوفيا ألا تنقله. فوضعها التعاقدي هو السبب الذي كاد يمنعها من الحديث أصلًا.'],
+     ['ألّا تقول شيئًا، وتترك صوفيا تشرح الوضع بنفسها.',0,
+      'مع أن هذا الخيار لا يُحدث ضررًا، فإنه يعني أن على صوفيا أن تشرح كل شيء للطبيب من البداية بعد أن طلبت منك أن تفعل ذلك عنها. إن اختيار ترك صوفيا تشرح الوضع أمر معقول. أما اتخاذ هذا القرار دون إخبارها، خصوصًا بعد أن اتفقتما على أن تشرح أنت للطبيب، فليس كذلك. ينبغي أن توضح تفضيلاتك منذ البداية.']
+    ]},
+   {narr:'لقد أخبرتَ الطبيب بما طلبت منك صوفيا.',
+    prompt:'ما آخر ما ينبغي أن تفعله؟',
+    opts:[
+     ['لا شيء. الأمر الآن في يد الطبيب.',0,
+      'لا يحدث شيء على الفور. لا تعرف صوفيا ما قيل عنها، وحين يكون لديها ما تقوله لك في المرة القادمة، ستأخذ ذلك في الحسبان عند قرارها بمشاركته أم لا.'],
+     ['أن تخبر صوفيا بما قلته ولمن قلته.',1],
+     ['أن تطلب من الطبيب أن يخبرك بسير الأمور.',0,
+      'مع أن هذه غريزة معقولة، فإن هذه المعلومات ليست من حقك أن تسأل عنها. اسأل صوفيا، لا الطبيب، عن سير الأمور.'],
+     ['أن تُعلم المدير الرياضي بأن صوفيا تتلقى الدعم.',0,
+      'المدير الرياضي مسؤول عن تعيين المدرّب، وقد طلبت صوفيا ألا يتجاوز هذا الأمر حدوده. وهذا هو الإفصاح الذي كانت تخشاه.']
+    ]},
+   {narr:'بعد أسبوع، تلتقي بصوفيا في التدريب. لم تذهب إلى الموعد.',
+    prompt:'ماذا تقول؟',
+    opts:[
+     ['«كيف حالك؟»',1],
+     ['«هل ذهبتِ إلى الموعد؟»',0,
+      'تقول صوفيا إنها لم تذهب إلى الموعد، وتعتذر عن ذلك. فالسؤال يدور حول الموعد لا حولها، ولهذا تأخذ الإجابة الصادقة شكل اعتراف.'],
+     ['لا شيء. لقد اتخذت صوفيا قرارها.',0,
+      'تنتهي المحادثة. إن عدم حضور موعد لا يعني في كثير من الأحيان أن الشخص قرر التوقف عن طلب الدعم، وإن لم تقل شيئًا فقد يُفهم ذلك على أنك فقدت اهتمامك. ربما قررت صوفيا ألا تذهب إلى الموعد، وهذا قرارها هي. ومع ذلك يمكنك أن تسألها عن حالها.'],
+     ['أن تعرض حجز موعد آخر مع الطبيب لصوفيا.',0,
+      'توافق صوفيا على أن تحجز لها موعدًا آخر. وما زلت لا تعرف ما الذي منعها من حضور الموعد الأول. اسأل قبل أن تمضي أبعد.']
+    ],
+    fb:'إن سؤال صوفيا عن نفسها، لا عن الموعد، يمنحها مكانًا تذهب إليه غير الرد بـ«نعم» أو «لا». لقد اعترض شيء ما طريقها وحال دون حضورها، ومن المرجّح أنه أمر عادي: التكلفة، أو ضيق الوقت، أو مواعيد عمل العيادة، أو التوتر، أو الخوف من أن يراها أحد وهي تدخل. اسأل صوفيا عمّا يجعل الأمور أسهل.'}
+  ],
+  kl:['وافقت صوفيا على حضور الموعد في المرة الأولى، ومع ذلك لم تذهب. وليس في ذلك ما هو غير معتاد. لقد سألتَ قبل أن تشارك، ولم تشارك إلا ما وافقت عليه، وأخبرتها بما قلته، وتابعتَ معها. ولم يتطلب أيّ من ذلك أن تعرف ما المشكلة التي تعاني منها.']
+ },
+
+ c2: {
+  screens:[
+   {narr:'تودّ أن تساعد كوامي على اتخاذ الخطوة التالية. يُعيَّن الحكام مركزيًا، ولا يوجد نادٍ قريب من مكان إقامته. لا يوجد طبيب ولا أخصائي نفسي ولا رابطة للحكام يمكنه اللجوء إليها.',
+    prompt:'ماذا تفعل أولًا؟',
+    opts:[
+     ['أن تعطيه رقم خط مساعدة للصحة النفسية.',0,
+      'يشكرك كوامي، لكنه لا يتصل. رقم الهاتف أسهل ما يمكن تقديمه وأقله استعمالًا، خصوصًا لشخص أخبرك للتو بأنه يقود سيارته إلى مبارياته ويحكّم ثم يعود إلى البيت. كما قد تترتب على الاتصال تكلفة مالية على كوامي، أو قد يضطر إلى استخدام لغة لا يريد استخدامها.'],
+     ['أن تسأل كوامي عمّا قد يجده مفيدًا وعمّا هو موجود حوله بالفعل، من أشخاص وخدمات على السواء.',1],
+     ['أن تقول لكوامي إن عليه التحدث إلى مختص.',0,
+      'يوافق كوامي على أن عليه ربما التحدث إلى مختص، لكنه لا يتابع الأمر. بمقترحك أن يتحدث إلى مختص، سمّيتَ فئة لا طريقًا، ولا تعرف بعدُ إن كان في محيطه مختصون متاحون.'],
+     ['أن تبحث عن خدمة وتوجّه كوامي إليها.',0,
+      'في هذا الخيار غريزة سليمة، لكن قبل أن توجّه كوامي إلى خدمة، ينبغي أن تتحقق من أنها موجودة، وتستقبل الناس مباشرة، وبتكلفة مقبولة. إن إرسال شخص إلى مكان يردّه أشدّ ضررًا من عدم إرساله إلى أي مكان.']
+    ]},
+   {narr:'يقول كوامي:', quote:'بخصوص الشابين من المنطقة التي كنت أعيش فيها، كنت أنوي الاتصال بهما، صدقني. وهناك عيادة قريبة مني، لكنني لا أعرف إن كانوا يقدمون هذا النوع من المساعدة.',
+    prompt:'ما الاستجابة الأكثر فائدة؟',
+    opts:[
+     ['أن تشجّع كوامي على الاتصال بزميليه السابقين، وتعرض أن تستعلم عن الخدمات التي تقدمها العيادة.',1],
+     ['أن تقول لكوامي إن التحقق من الخدمات التي تقدمها العيادة فكرة جيدة، وتترك الأمر له.',0,
+      'يذهب كوامي إلى العيادة فيكتشف أنها لا تقدم الخدمة التي يبحث عنها. ونتيجة لذلك يقلّ احتمال أن يحاول مرة أخرى. إن الاستعلام أولًا يكلّفك مكالمة هاتفية، ويوفّر على كوامي رحلة بلا فائدة.'],
+     ['أن تقول لكوامي إن زميليه السابقين لا يستطيعان تقديم دعم حقيقي.',0,
+      'يوافقك كوامي وينسى الشخصين اللذين ذكرهما للتو. وبالنسبة إلى من يعاني من العزلة، قد يكون التواصل مع شخصين يعرفانه بالفعل أنفع الخيارات. فالشخص الذي يثق به المرء والعامل الصحي العام كلاهما طريق، لا نسخة أدنى من طريق.'],
+     ['أن تعرض أن تكون أنت الشخص الذي يتصل به.',0,
+      'مع أن هذا عرض كريم، فإنه يجعلك منظومة الدعم كلها. ومن المهم مساعدة الشخص على بناء أكثر من مسار للدعم.']
+    ]},
+   {narr:'تتصل بالعيادة. تعرف أنها تتعامل مع من لديهم مشكلات صحية عامة، وأنها تستطيع الإحالة، ولا تشترط إحالة لتحديد المواعيد، وأن هناك رسومًا صغيرة.',
+    prompt:'ماذا تقول لكوامي؟',
+    opts:[
+     ['كل ما عرفته، بما في ذلك الرسوم، وتترك له القرار.',1],
+     ['أن كل شيء قد رُتّب، وأن عليه أن يذهب إلى العيادة.',0,
+      'يصل كوامي إلى العيادة فيُطلب منه دفع رسوم لم يتوقعها، فيغادر. إن تقديم معلومات دقيقة جزء من ربط الشخص بالدعم. وإن كنت لا تعرف شيئًا فقل ذلك.'],
+     ['أن العيادة تسعد بحجز موعد له. ولا تذكر له شيئًا عن الرسوم تجنبًا لخطر أن تدفعه إلى إقناع نفسه بعدم الذهاب.',0,
+      'مع أن هذا الخيار حسن النية، فإنه من أضمن الطرق لفقدان ثقة كوامي. فتحديد ما يمكن للشخص تحمّل معرفته يسلبه القرار.'],
+     ['لا شيء بعد. ابحث عن خدمة مجانية قبل أن تخبره بأي شيء.',0,
+      'قد يتبيّن في النهاية أن هذا هو الخيار الصحيح. غير أنه يمنع السعي إلى طريق متاح بينما تبحث عن آخر قد لا يوجد. أخبر كوامي بما وجدته، وإن رغب في ذلك فواصل البحث.']
+    ]},
+   {narr:'بعد ثلاثة أسابيع، تحدّث كوامي إلى أحد زملائه القدامى في مكالمتين هاتفيتين منفصلتين، وتدبّر أمر السفر إلى إحدى المباريات مع حكم آخر. لم يذهب إلى العيادة.',
+    prompt:'هل نجح هذا؟',
+    opts:[
+     ['لا، لأن كوامي لم يرَ مختصًا.',0,
+      'انتقل كوامي من قيادة سيارته وحيدًا ذهابًا وإيابًا إلى المباريات، إلى إجراء مكالمتين هاتفيتين مع زميل قديم والعثور على من يسافر معه إلى المباريات. وبالنسبة إلى من كان يعاني من العزلة، فهذا دعم.'],
+     ['نعم، بالطريقة الأهم بالنسبة إليه، والعيادة لا تزال موجودة إن أراد.',1],
+     ['نعم، ويمكنك التوقف عن الاطمئنان عليه الآن.',0,
+      'حدث أمر مفيد في مرحلة مبكرة من العملية. وإبقاء الباب مفتوحًا لكوامي يتيح له العودة إليك.'],
+     ['لا توجد طريقة لمعرفة ذلك.',0,
+      'يمكنك أن ترى أن شيئًا ما قد تغيّر. أما ما لا يمكنك معرفته فهو إن كان ذلك كافيًا، ولهذا تواصل الاطمئنان عليه بدلًا من إغلاق الموضوع.']
+    ]}
+  ],
+  kl:['لا يوجد طبيب ولا أخصائي نفسي ولا رابطة للحكام يمكن لكوامي اللجوء إليها، ومع ذلك فهو في وضع أفضل مما كان عليه قبل ثلاثة أسابيع. فالربط يعني مساعدة الشخص على الوصول إلى أي دعم متاح له فعلًا، وأحيانًا يكون الطريق الأنفع هو طريق كان يعرفه من قبل. وإن كانت هناك خدمة متاحة، فاستعلم عمّا تقدمه، وهل يمكن للناس الوصول إليها مباشرة، وكم تكلّف، قبل أن توجّه أحدًا إليها.',
+      'لا يتوقف الوصول إلى الدعم على الموارد وحدها. فالحكام والمتطوعون والعاملون بدوام جزئي ومن يعملون في كرة القدم للهواة وعلى المستوى القاعدي كثيرًا ما يقعون خارج نطاق الدعم المتاح، والأمر نفسه ينطبق على هؤلاء في جميع اقتصادات كرة القدم.']
+ }
+};
+
+/* Follow-ups now continue inside each character's own conversation */
+function joinFollowUp(id, c){
+  var b = BRANCHES[id];
+  b[b.length-1].more = true;                 // listening key-learning screen: continue instead of finishing
+  c.screens.forEach(function(sc){ sc.type='cq'; b.push(sc); });
+  b.push({type:'kl', kl:c.kl});
+}
+joinFollowUp('sofia', CONT.c1);
+joinFollowUp('kwame', CONT.c2);
+
+var END = {
+  title: 'لاحظ ما بقي كما هو',
+  paras: ['لاحظ ما بقي كما هو في السيناريوهين. سألتَ الشخص الذي أمامك قبل أن تقرر، ونقلتَ فقط ما تم الاتفاق عليه، وأخبرتَ الشخص بما قلته، وتابعتَ معه. وفي كلتا الحالتين لم تكن بحاجة إلى معرفة المشكلة.'],
+  done: 'لقد أكملت هذا النشاط. يمكنك الآن الانتقال إلى الجزء التالي من الدورة.'
+};
+
+/* =====================================================================
+   SCORM ADAPTER – supports SCORM 1.2 and SCORM 2004, finds the LMS API
+   in parent / opener windows, and fails silently if there isn't one
+   (so the file also runs standalone for review).
+   ===================================================================== */
+var Scorm = (function(){
+  var api=null, ver=null, ok=false, start=Date.now(), finished=false;
+  function look(w){
+    var n=0;
+    while(w && n<12){
+      try{
+        if(w.API_1484_11) return {a:w.API_1484_11,v:'2004'};
+        if(w.API) return {a:w.API,v:'1.2'};
+      }catch(e){}
+      if(w.parent===w) break;
+      w=w.parent; n++;
+    }
+    return null;
+  }
+  function pad(n,l){n=String(n);while(n.length<l)n='0'+n;return n}
+  function sessionTime(){
+    var s=Math.round((Date.now()-start)/1000), h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=s%60;
+    return ver==='2004' ? 'PT'+h+'H'+m+'M'+sec+'S' : pad(h,4)+':'+pad(m,2)+':'+pad(sec,2);
+  }
+  function get(k12,k04){
+    if(!ok) return '';
+    try{ return String(ver==='2004' ? api.GetValue(k04) : api.LMSGetValue(k12)||''); }catch(e){ return ''; }
+  }
+  function set(k12,k04,v){
+    if(!ok) return;
+    try{ ver==='2004' ? api.SetValue(k04,String(v)) : api.LMSSetValue(k12,String(v)); }catch(e){}
+  }
+  function commit(){
+    if(!ok) return;
+    try{ ver==='2004' ? api.Commit('') : api.LMSCommit(''); }catch(e){}
+  }
+  return {
+    init:function(){
+      var r=look(window) || (window.opener ? look(window.opener) : null);
+      if(!r) return false;
+      api=r.a; ver=r.v;
+      try{ ok = (ver==='2004') ? String(api.Initialize(''))==='true' : String(api.LMSInitialize(''))==='true'; }catch(e){ ok=false; }
+      if(ok){
+        var st = ver==='2004' ? get('','cmi.completion_status') : get('cmi.core.lesson_status','');
+        if(st==='not attempted' || st==='unknown' || st===''){
+          set('cmi.core.lesson_status','cmi.completion_status','incomplete');
+          commit();
+        }
+      }
+      return ok;
+    },
+    connected:function(){return ok},
+    status:function(){ return ver==='2004' ? get('','cmi.completion_status') : get('cmi.core.lesson_status',''); },
+    getData:function(){ return get('cmi.suspend_data','cmi.suspend_data'); },
+    setData:function(s){ set('cmi.suspend_data','cmi.suspend_data',s); commit(); },
+    setBookmark:function(s){ if(ver==='1.2') set('cmi.core.lesson_location','',s); else set('','cmi.location',s); },
+    complete:function(scorePct){
+      if(!ok) return;
+      set('cmi.core.lesson_status','cmi.completion_status','completed');
+      if(typeof scorePct==='number'){
+        set('cmi.core.score.min','cmi.score.min',0);
+        set('cmi.core.score.max','cmi.score.max',100);
+        set('cmi.core.score.raw','cmi.score.raw',scorePct);
+        if(ver==='2004') set('','cmi.score.scaled',(scorePct/100).toFixed(2));
+      }
+      commit();
+    },
+    finish:function(completed){
+      if(!ok || finished) return; finished=true;
+      set('cmi.core.session_time','cmi.session_time',sessionTime());
+      set('cmi.core.exit','cmi.exit', completed ? (ver==='2004'?'normal':'') : 'suspend');
+      commit();
+      try{ ver==='2004' ? api.Terminate('') : api.LMSFinish(''); }catch(e){}
+    }
+  };
+})();
+
+
+/* =====================================================================
+   PORTRAITS – illustrated placeholders drawn in SVG (no external files).
+   Set CHARS[n].photo to a data: URI / relative file to use real photos.
+   ===================================================================== */
+var PORTRAITS = (function(){
+  var EYE='#2a1d16';
+  function face(o){
+    var brow=o.brow||'#2a1d16';
+    return '<ellipse cx="37" cy="68" rx="4" ry="6" fill="'+o.skinD+'"/><ellipse cx="83" cy="68" rx="4" ry="6" fill="'+o.skinD+'"/>'+
+      '<ellipse cx="60" cy="64" rx="23" ry="28" fill="'+o.skin+'"/>'+
+      '<path d="M44 55 q6 -3 11 -1" stroke="'+brow+'" stroke-width="2.2" fill="none" stroke-linecap="round"/>'+
+      '<path d="M65 54 q5 -2 11 1" stroke="'+brow+'" stroke-width="2.2" fill="none" stroke-linecap="round"/>'+
+      '<ellipse cx="50" cy="63" rx="2.4" ry="2.8" fill="'+EYE+'"/><ellipse cx="70" cy="63" rx="2.4" ry="2.8" fill="'+EYE+'"/>'+
+      '<path d="M60 64 q-3 9 0 11 q2 1 4 0" stroke="'+o.skinD+'" stroke-width="1.8" fill="none" stroke-linecap="round"/>'+
+      '<path d="M52 80 q8 6 16 0" stroke="'+(o.lip||'#8a4a3c')+'" stroke-width="2.2" fill="none" stroke-linecap="round"/>';
+  }
+  function build(o){
+    var s='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 150" preserveAspectRatio="xMidYMin slice">'+
+      '<rect width="120" height="150" fill="'+o.bg+'"/>'+
+      '<circle cx="92" cy="30" r="46" fill="#ffffff" opacity=".18"/>'+
+      (o.hairBack||'')+
+      '<rect x="49" y="86" width="22" height="26" rx="8" fill="'+o.skinD+'"/>'+
+      '<path d="M6 150 C6 118 32 104 60 104 C88 104 114 118 114 150 Z" fill="'+o.top+'"/>'+
+      (o.topDetail||'')+
+      face(o)+(o.hairFront||'')+'</svg>';
+    return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s);
+  }
+  var cap='M36 62 C33 36 47 28 60 28 C74 28 87 36 84 62 C81 49 73 44 60 44 C47 44 39 49 36 62Z';
+  return {
+    nuno: build({bg:'#c9d6e6',skin:'#b97c55',skinD:'#a56a46',
+      top:'#1f4fa3',topDetail:'<path d="M46 106 L60 124 L74 106 Z" fill="#f3f6fb"/><circle cx="82" cy="126" r="4" fill="#f3f6fb" opacity=".85"/>',
+      hairFront:'<path d="'+cap+'" fill="#1b1411"/><circle cx="46" cy="33" r="7" fill="#1b1411"/><circle cx="58" cy="29" r="8" fill="#1b1411"/><circle cx="71" cy="31" r="8" fill="#1b1411"/><circle cx="80" cy="38" r="6" fill="#1b1411"/>'}),
+    sofia: build({bg:'#d8d2ca',skin:'#e8bd9d',skinD:'#d6a583',brow:'#8a6a3a',lip:'#a45a50',
+      hairBack:'<circle cx="60" cy="22" r="12" fill="#c49a52"/><path d="M34 66 C30 36 46 28 60 28 C74 28 90 36 86 66 L82 62 L38 62Z" fill="#c49a52"/>',
+      top:'#1e2023',topDetail:'<path d="M60 108 L60 150" stroke="#8a8f96" stroke-width="2"/><path d="M44 106 L60 118 L76 106" stroke="#2f3237" stroke-width="5" fill="none"/>',
+      hairFront:'<path d="'+cap+'" fill="#c49a52"/><path d="M37 60 C38 52 42 48 46 47 C42 52 40 58 40 66Z M83 60 C82 52 78 48 74 47 C78 52 80 58 80 66Z" fill="#b08a46"/>'}),
+    c3: build({bg:'#d7c8b4',skin:'#c58b64',skinD:'#b07853',
+      hairBack:'<path d="M32 64 C28 30 48 24 60 24 C74 24 92 30 88 64 C89 92 94 112 84 122 L36 122 C26 112 31 92 32 64Z" fill="#1d1615"/>',
+      top:'#b3282c',topDetail:'<path d="M46 106 Q60 120 74 106" stroke="#7d1a1e" stroke-width="5" fill="none"/><path d="M14 138 L34 150 M106 138 L86 150" stroke="#f3e9e9" stroke-width="3" opacity=".7"/>',
+      hairFront:'<path d="M36 64 C32 38 46 27 62 27 C76 27 88 38 84 64 C82 52 78 46 70 42 C62 52 46 50 36 64Z" fill="#1d1615"/>'}),
+    kwame: build({bg:'#c9d8e4',skin:'#6b4430',skinD:'#59382a',lip:'#3e2419',
+      top:'#f0bf2a',topDetail:'<path d="M44 106 Q60 118 76 106 L76 112 Q60 124 44 112Z" fill="#1c1c1c"/>',
+      hairFront:'<path d="M37 60 C36 40 47 35 60 35 C73 35 84 40 83 60 C80 49 72 45 60 45 C48 45 40 49 37 60Z" fill="#120d0b"/>'}),
+    yuki: build({bg:'#c5d1de',skin:'#f0d2b8',skinD:'#deb99c',lip:'#a45a50',brow:'#1c1512',
+      hairBack:'<path d="M33 64 C30 30 48 24 60 24 C74 24 90 30 87 64 C88 86 91 104 86 114 L34 114 C29 104 32 86 33 64Z" fill="#14100f"/>',
+      top:'#1c2433',topDetail:'<path d="M48 106 L60 126 L72 106 Z" fill="#f4f6f9"/><path d="M40 106 L58 140 L50 150 M80 106 L62 140 L70 150" stroke="#2c374a" stroke-width="4" fill="none"/>',
+      hairFront:'<path d="M35 64 C32 38 46 27 60 27 C74 27 88 38 85 64 C82 50 74 42 60 40 C46 42 38 50 35 64Z" fill="#14100f"/>'}),
+    ratu: build({bg:'#93bfc6',skin:'#b07a52',skinD:'#9b6742',lip:'#6e3d2c',
+      top:'#2f6b45',topDetail:'<g fill="#a5d0a8" opacity=".55"><circle cx="24" cy="128" r="4"/><circle cx="40" cy="140" r="4"/><circle cx="92" cy="130" r="4"/><circle cx="78" cy="144" r="4"/><circle cx="60" cy="140" r="3"/><circle cx="104" cy="144" r="3"/></g><path d="M46 106 L60 120 L74 106" stroke="#1f4a30" stroke-width="5" fill="none"/>',
+      hairFront:'<path d="M35 62 C32 36 46 27 60 27 C75 27 88 36 85 62 C82 49 74 43 60 43 C46 43 38 49 35 62Z" fill="#17110e"/>'})
+  };
+})();
+
+/* =====================================================================
+   STATE
+   ===================================================================== */
+var S = { done:[], first:{}, complete:false };
+var route = {stage:'hub'};
+var dec = null;          // state of the decision currently on screen
+var quiz = null;         // state of the quiz
+var app = document.getElementById('app');
+var live = document.getElementById('live');
+
+function charById(id){ for(var i=0;i<CHARS.length;i++) if(CHARS[i].id===id) return CHARS[i]; return null; }
+function t(s){
+  if(!s) return '';
+  CHARS.forEach(function(c){ if(c.scriptName!==c.name) s=s.split(c.scriptName).join(c.name); });
+  return s;
+}
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function T(s){ return esc(t(s)); }
+function letter(i){ return ['أ','ب','ج','د'][i] || String(i+1); }
+
+function save(){
+  var key = route.stage==='b' ? 'hub' : route.stage;
+  Scorm.setData(JSON.stringify({s:key, d:S.done, f:S.first, c:S.complete?1:0}));
+  Scorm.setBookmark(route.stage+(route.k?':'+route.k:''));
+}
+function load(){
+  var raw = Scorm.getData();
+  if(!raw) return;
+  try{
+    var o = JSON.parse(raw);
+    S.done = o.d||[]; S.first = o.f||{}; S.complete = !!o.c;
+    var s = o.s;
+    if(s==='quiz'||s==='fb'||s==='end'||s==='hub') route={stage:s};
+  }catch(e){}
+}
+function scorePct(){
+  var k=Object.keys(S.first); if(!k.length) return 0;
+  var n=0; k.forEach(function(x){ n+=S.first[x]?1:0; });
+  return Math.round(100*n/k.length);
+}
+function say(msg){ live.textContent=''; setTimeout(function(){ live.textContent=msg; },30); }
+
+/* =====================================================================
+   RENDERING
+   ===================================================================== */
+function avatar(c){
+  var src=c.photo||PORTRAITS[c.id];
+  if(src) return '<img src="'+src+'" alt="">';
+  var ini = c.name.replace(/[^A-Za-z\u00C0-\u024F\u0600-\u06FF]/g,'').slice(0,1).toUpperCase();
+  return '<span class="av av-'+c.tone+'" aria-hidden="true">'+esc(ini)+'</span>';
+}
+var ICON_PIN='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#004d8c" stroke-width="2.4" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>';
+var ICON_GO='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#004d8c" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
+var ICON_TICK='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>';
+var ICON_HUB='<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2.5" width="8" height="6" rx="1.5"/><circle cx="12" cy="13" r="2"/><path d="M8.5 20c0-2 1.6-3.5 3.5-3.5s3.5 1.5 3.5 3.5"/><circle cx="5.5" cy="14.5" r="1.5"/><circle cx="18.5" cy="14.5" r="1.5"/></svg>';
+
+function setView(html, focusSel){
+  app.innerHTML = html;
+  window.scrollTo(0,0);
+  var f = app.querySelector(focusSel||'[data-focus]');
+  if(f){ f.setAttribute('tabindex','-1'); try{ f.focus({preventScroll:true}); }catch(e){ f.focus(); } }
+}
+
+function who(c, rightHTML){
+  return '<div class="topbar"><div class="who">'+avatar(c)+
+    '<div><div class="who-name">'+esc(c.name)+'، '+c.age+'</div><div class="who-meta">'+esc(c.role)+' · '+esc(c.country)+'</div></div></div>'+
+    (rightHTML||'')+'</div>';
+}
+function stepsHTML(i,n,label){
+  var d=''; for(var k=0;k<n;k++) d+='<span class="dot'+(k<=i?' on':'')+'"></span>';
+  return '<div class="steps"><span>'+esc(label)+'</span><span class="dots" aria-hidden="true">'+d+'</span></div>';
+}
+
+/* ---- Hub ---- */
+function minMet(){
+  if(S.done.length < CONFIG.MIN_BRANCHES) return false;
+  for(var i=0;i<CONFIG.REQUIRED_IDS.length;i++) if(S.done.indexOf(CONFIG.REQUIRED_IDS[i])<0) return false;
+  return true;
+}
+function renderHub(){
+  var cards = CHARS.map(function(c){
+    var done = S.done.indexOf(c.id)>=0;
+    return '<button class="card'+(done?' done':'')+'" data-action="open" data-id="'+c.id+'" aria-label="'+esc(c.name)+'، '+c.age+'، '+esc(c.role)+'، '+esc(c.country)+'. '+(done?'محادثة مكتملة. افتحها مجددًا.':'افتح هذه المحادثة.')+'">'+
+      '<span class="card-photo">'+avatar(c)+'</span>'+
+      '<span class="card-body">'+
+        '<span class="card-name">'+esc(c.name)+'، '+c.age+'</span>'+
+        '<span class="card-role">'+esc(c.role)+'</span>'+
+        '<span class="card-where">'+ICON_PIN+esc(c.country)+'</span>'+
+        '<span class="card-quote"><b aria-hidden="true">«</b>'+esc(c.quote)+'</span>'+
+      '</span>'+
+      (done?'<span class="badge-done">'+ICON_TICK+'تمّ</span>':(CONFIG.REQUIRED_IDS.indexOf(c.id)>=0?'<span class="badge-req">إلزامية</span>':''))+
+      '<span class="card-go" aria-hidden="true">'+ICON_GO+'</span>'+
+    '</button>';
+  }).join('');
+  var need = Math.max(0, CONFIG.MIN_BRANCHES - S.done.length);
+  var reqNote='';
+  if(CONFIG.REQUIRED_IDS.length){
+    var miss = CONFIG.REQUIRED_IDS.filter(function(id){return S.done.indexOf(id)<0}).map(function(id){return charById(id).name});
+    if(miss.length) reqNote=' يجب أيضًا إكمال: '+miss.join('، ')+'.';
+  }
+  var tally = minMet()
+    ? '<div class="tally">اكتملت '+S.done.length+' من أصل '+CHARS.length+' محادثات<small>يمكنك المتابعة الآن، أو استكشاف المزيد من المحادثات أولًا.</small></div>'
+    : '<div class="tally">اكتملت '+S.done.length+' من أصل '+CHARS.length+' محادثات<small>أكمل ما لا يقل عن '+CONFIG.MIN_BRANCHES+' محادثات للمتابعة. استكشاف أكثر من محادثة يتيح لك المقارنة بينها.'+reqNote+'</small></div>';
+  setView(
+    '<div class="hub-head"><div class="hub-icon">'+ICON_HUB+'</div><div>'+
+      '<h1 class="sr" data-focus>'+esc(TEXT.title)+'</h1>'+
+      '<p class="hub-sub" style="margin-top:0">'+esc(TEXT.hubSub)+'</p>'+
+      '<p class="hub-hint">'+esc(TEXT.hubHint)+'</p></div></div>'+
+    '<div class="grid">'+cards+'</div>'+
+    '<div class="info"><span class="info-i" aria-hidden="true">i</span><span>'+esc(TEXT.hubInfo)+'</span></div>'+
+    '<div class="hub-foot">'+tally+'<button class="btn" data-action="toquiz"'+(minMet()?'':' disabled')+'>متابعة</button></div>'
+  );
+}
+
+/* ---- Decision block (shared by branches and continuations) ---- */
+function decisionInner(){
+  var s=dec.screen, mode=dec.mode, h='';
+  h += '<h2 class="prompt" id="prompt">'+T(s.prompt)+'</h2><ul class="opts" aria-labelledby="prompt">';
+  s.opts.forEach(function(o,i){
+    var cls='opt', tag='', disabled='';
+    var tried = dec.tried.indexOf(i)>=0;
+    if(dec.solved){
+      disabled=' disabled';
+      if(o[1]){ cls+=' good'; tag='أفضل استجابة'; }
+      else if(dec.pick===i){ cls+=' bad'; tag='اختيارك: ليست أفضل استجابة'; }
+      else if(tried){ cls+=' bad'; tag='جرّبتَها: ليست أفضل استجابة'; }
+      else cls+=' faded';
+    } else if(tried){
+      cls+=' bad'; disabled=' disabled'; tag='جرّبتَها: ليست أفضل استجابة';
+    }
+    h += '<li><button class="'+cls+'" data-action="pick" data-i="'+i+'"'+disabled+' aria-pressed="'+((dec.pick===i||tried)?'true':'false')+'">'+
+      '<span class="letter" aria-hidden="true">'+letter(i)+'</span>'+
+      '<span class="opt-txt"><span class="sr">الخيار '+letter(i)+': </span>'+T(o[0])+(tag?'<span class="opt-tag">'+tag+'</span>':'')+'</span></button></li>';
+  });
+  h += '</ul>';
+  if(dec.msg){
+    var m=dec.msg;
+    h += '<div class="fb '+m.kind+'" id="fb" tabindex="-1" role="status"><h3>'+esc(m.title)+'</h3>'+
+      (m.body?'<p>'+T(m.body)+'</p>':'')+
+      (m.note?'<p><strong>'+esc(m.note)+'</strong></p>':'')+
+      (m.kind==='bad' && mode==='cq' && !dec.solved ? '<div class="actions"><button class="btn" data-action="retry">العودة والاختيار مجددًا</button></div>' : '')+
+      '</div>';
+  }
+  if(dec.solved){
+    h += '<div class="actions page-actions"><button class="btn" data-action="next" id="cont">متابعة</button></div>';
+  }
+  return h;
+}
+function refreshDecision(focusFb){
+  var box=document.getElementById('dec');
+  box.innerHTML=decisionInner();
+  var f = focusFb ? document.getElementById('fb') : null;
+  if(f){ f.focus({preventScroll:true}); f.scrollIntoView({block:'nearest',behavior:'smooth'}); }
+}
+function sceneHTML(s){
+  if(!s.narr && !s.quote) return '';
+  return '<div class="scene on-blue">'+
+    (s.narr?'<p class="narr">'+T(s.narr)+'</p>':'')+
+    (s.quote?'<blockquote class="quote">'+T(s.quote)+'</blockquote>':'')+'</div>';
+}
+function klHTML(paras){
+  return '<div class="kl"><h2>الدرس الأساسي</h2>'+paras.map(function(p){return '<p>'+T(p)+'</p>';}).join('')+'</div>';
+}
+
+/* ---- Branch screens ---- */
+function renderBranch(){
+  var c=charById(route.id), list=BRANCHES[route.id], s=list[route.i], n=list.length;
+  var top = who(c,'<button class="link" data-action="exit">العودة إلى المحادثات</button>');
+  var steps = stepsHTML(route.i,n,'الشاشة '+(route.i+1)+' من '+n);
+  var remember = route.i===0 ? '<p class="remember">'+esc(TEXT.remember)+'</p>' : '';
+  var body;
+  if(s.type==='kl'){
+    if(s.more){
+      body = sceneHTML(s)+klHTML(s.kl)+
+        '<div class="actions page-actions"><button class="btn" data-action="next">متابعة المحادثة</button></div>';
+    } else {
+      if(S.done.indexOf(route.id)<0){ S.done.push(route.id); save(); say('اكتملت المحادثة مع '+c.name+'.'); }
+      body = sceneHTML(s)+klHTML(s.kl)+
+        '<div class="actions page-actions"><button class="btn" data-action="exit">العودة إلى المحادثات</button></div>';
+    }
+    setView(top+steps+body);
+    var k=app.querySelector('.kl h2'); if(k){k.setAttribute('data-focus','');k.setAttribute('tabindex','-1');k.focus({preventScroll:true});}
+    return;
+  }
+  dec = {screen:s, mode:(s.type==='cq'?'cq':'q'), key:'b:'+route.id+':'+route.i, tried:[], solved:false, pick:null, msg:null};
+  setView(top+steps+remember+sceneHTML(s)+'<div id="dec">'+decisionInner()+'</div>');
+  // focus the scene so screen readers read the situation first
+  var sc=app.querySelector('.scene'); if(sc){sc.setAttribute('tabindex','-1'); sc.focus({preventScroll:true});}
+}
+
+/* ---- Quiz ---- */
+function renderQuiz(){
+  quiz = {sel:{}, checked:false, attempts:0, correct:false, revealed:false};
+  drawQuiz(true);
+}
+function drawQuiz(initial){
+  var items = QUIZ.items.map(function(it,i){
+    var on=!!quiz.sel[i], cls='chk', tag='';
+    if(quiz.checked){
+      if(quiz.revealed){
+        if(it[1]){cls+=' good';tag=on?'صحيح':'الإجابة الصحيحة'}
+        else if(on){cls+=' bad';tag='لا ينطبق'}
+      } else {
+        if(it[1]&&on){cls+=' good';tag='صحيح'}
+        else if(!it[1]&&on){cls+=' bad';tag='لا ينطبق'}
+        else if(it[1]&&!on){cls+=' miss';tag='فاتتك هذه'}
+      }
+    }
+    return '<li><label class="'+cls+'"><input type="checkbox" data-i="'+i+'"'+(on?' checked':'')+(quiz.checked?' disabled':'')+'>'+
+      '<span>'+esc(it[0])+(tag?'<span class="tag">'+tag+'</span>':'')+'</span></label></li>';
+  }).join('');
+  var result='', actions='';
+  if(quiz.checked){
+    result='<div class="fb '+(quiz.correct?'good':'bad')+'" id="fb" tabindex="-1" role="status"><h3>'+(quiz.correct?'صحيح':'ليس تمامًا')+'</h3><p>'+esc(quiz.correct?QUIZ.passMsg:(quiz.revealed?QUIZ.revealMsg:QUIZ.failMsg))+'</p></div>';
+    actions = (quiz.correct||quiz.revealed)
+      ? '<button class="btn" data-action="tofb">متابعة</button>'
+      : '<button class="btn" data-action="qretry">حاول مرة أخرى</button>';
+  } else {
+    var any=Object.keys(quiz.sel).some(function(k){return quiz.sel[k]});
+    actions='<button class="btn" data-action="qcheck"'+(any?'':' disabled')+'>تحقّق من الإجابات</button>';
+  }
+  var html = '<h1 data-focus>'+esc(QUIZ.title)+'</h1><p style="margin-top:.6em">'+esc(QUIZ.intro)+'</p>'+
+    '<fieldset><legend>'+esc(QUIZ.q)+' <span style="font-weight:400;color:#4d4f53">'+esc(QUIZ.hint)+'</span></legend>'+
+    '<ul class="opts" id="qlist">'+items+'</ul></fieldset>'+result+'<div class="actions page-actions">'+actions+'</div>';
+  if(initial){ setView(html); }
+  else {
+    app.innerHTML=html;
+    var f=document.getElementById('fb'); if(f){f.focus({preventScroll:true});f.scrollIntoView({block:'nearest'});}
+  }
+}
+
+/* ---- Simple text pages ---- */
+function renderText(o, nextAction, btn, asPanel){
+  var h = asPanel
+    ? '<div class="panel on-blue"><h1 data-focus style="color:#fff">'+esc(o.title)+'</h1>'+o.paras.map(function(p){return '<p>'+T(p)+'</p>'}).join('')+'</div>'
+    : '<h1 data-focus>'+esc(o.title)+'</h1><div style="margin-top:.8em">'+o.paras.map(function(p){return '<p>'+T(p)+'</p>'}).join('')+'</div>';
+  h += '<div class="actions page-actions"><button class="btn" data-action="'+nextAction+'">'+esc(btn)+'</button></div>';
+  setView(h);
+}
+
+/* ---- End ---- */
+function renderEnd(){
+  if(!S.complete){
+    S.complete=true; save();
+    Scorm.complete(CONFIG.REPORT_SCORE ? scorePct() : undefined);
+    say('اكتمل النشاط.');
+  }
+  setView('<div class="panel on-blue"><h1 data-focus style="color:#fff">'+esc(END.title)+'</h1>'+
+    END.paras.map(function(p){return '<p>'+T(p)+'</p>'}).join('')+'</div>'+
+    '<p class="page-actions" style="font-weight:700;color:#004d8c">'+esc(END.done)+'</p>'+
+    '<div class="actions"><button class="btn alt" data-action="restart">مراجعة المحادثات مجددًا</button></div>');
+}
+
+function render(){
+  switch(route.stage){
+    case 'hub': renderHub(); break;
+    case 'b': renderBranch(); break;
+    case 'quiz': renderQuiz(); break;
+    case 'fb': renderText(FEEDBACK,'toend','متابعة'); break;
+    case 'end': renderEnd(); break;
+    default: renderHub();
+  }
+}
+function go(r){ route=r; render(); save(); }
+
+/* =====================================================================
+   EVENTS
+   ===================================================================== */
+app.addEventListener('change', function(e){
+  var el=e.target;
+  if(el.matches && el.matches('#qlist input[type=checkbox]')){
+    quiz.sel[el.getAttribute('data-i')] = el.checked;
+    var any=Object.keys(quiz.sel).some(function(k){return quiz.sel[k]});
+    var b=app.querySelector('[data-action=qcheck]'); if(b) b.disabled=!any;
+  }
+});
+
+app.addEventListener('click', function(e){
+  var b=e.target.closest('[data-action]'); if(!b || b.disabled) return;
+  var a=b.getAttribute('data-action');
+
+  if(a==='open'){ go({stage:'b', id:b.getAttribute('data-id'), i:0}); }
+  else if(a==='exit'){ go({stage:'hub'}); }
+  else if(a==='toquiz'){ go({stage:'quiz'}); }
+  else if(a==='tofb'){ go({stage:'fb'}); }
+  else if(a==='toend'){ go({stage:'end'}); }
+  else if(a==='restart'){ go({stage:'hub'}); }
+
+  else if(a==='qcheck'){
+    quiz.attempts++; quiz.checked=true;
+    var ok=true; QUIZ.items.forEach(function(it,i){ if(!!it[1]!==!!quiz.sel[i]) ok=false; });
+    quiz.correct=ok;
+    if(!ok && quiz.attempts>=CONFIG.MAX_ATTEMPTS) quiz.revealed=true;
+    if(!(('quiz') in S.first)) S.first['quiz']= (ok && quiz.attempts===1) ? 1 : 0;
+    drawQuiz(false); save();
+  }
+  else if(a==='qretry'){ quiz.checked=false; drawQuiz(false); var h=app.querySelector('legend'); if(h){h.setAttribute('tabindex','-1');h.focus();} }
+
+  else if(a==='pick'){
+    if(dec.solved) return;
+    var i=+b.getAttribute('data-i'), o=dec.screen.opts[i];
+    if(dec.mode==='q'){
+      dec.pick=i; dec.solved=true;
+      S.first[dec.key]= o[1]?1:0;
+      dec.msg = o[1] ? {kind:'good',title:'صحيح',body:dec.screen.fb} : {kind:'bad',title:'ليست أفضل استجابة',body:dec.screen.fb};
+      refreshDecision(true);
+    } else {
+      if(o[1]){
+        dec.pick=i; dec.solved=true;
+        if(!(dec.key in S.first)) S.first[dec.key]=1;
+        dec.msg = {kind:'good', title:'صحيح', body:dec.screen.fb||''};
+      } else {
+        dec.tried.push(i);
+        S.first[dec.key]=0;
+        if(dec.tried.length >= CONFIG.MAX_ATTEMPTS){
+          dec.solved=true; dec.revealed=true;
+          dec.msg = {kind:'bad', title:'ما الذي يحدث', body:o[2]||'',
+            note:'كانت هذه محاولتك الثانية، لذا أُبرزت أفضل استجابة الآن. ألقِ نظرة عليها ثم تابع.'};
+        } else {
+          dec.msg = {kind:'bad', title:'ما الذي يحدث', body:o[2]||''};
+        }
+      }
+      refreshDecision(true);
+    }
+    save();
+  }
+  else if(a==='retry'){
+    dec.msg=null; refreshDecision(false);
+    var first=document.querySelector('#dec .opt:not([disabled])'); if(first) first.focus();
+  }
+  else if(a==='next'){
+    if(route.stage==='b'){ go({stage:'b', id:route.id, i:route.i+1}); }
+  }
+});
+
+/* =====================================================================
+   START
+   ===================================================================== */
+(function(){var v=document.getElementById('ver'); if(v){ if(CONFIG.SHOW_VERSION) v.textContent=CONFIG.VERSION; else v.style.display='none'; }})();
+Scorm.init();
+load();
+render();
+window.addEventListener('pagehide', function(){ Scorm.finish(S.complete); });
+window.addEventListener('beforeunload', function(){ Scorm.finish(S.complete); });
+})();
+</script>
+</body>
+</html>
